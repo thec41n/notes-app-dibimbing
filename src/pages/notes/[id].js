@@ -92,6 +92,10 @@ function NoteDetail() {
     if (confirmDelete) {
       deleteNote({
         variables: { id },
+      }).then(() => {
+        router.push("/").then(() => {
+          window.location.reload();
+        });
       });
     }
   };
