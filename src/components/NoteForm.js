@@ -2,24 +2,54 @@ import {
   FormControl,
   FormLabel,
   Input,
+  Text,
   Textarea,
   Button,
   Box,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@apollo/client";
-import { ADD_NOTE } from '../config/mutations';
+import { ADD_NOTE, UPDATE_NOTE } from "../config/mutations";
 
-function NoteForm() {
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [addNote, { data, loading, error }] = useMutation(ADD_NOTE);
+function NoteForm({
+  noteId,
+  initialTitle = "",
+  initialBody = "",
+  onCompleted,
+}) {
+  const [title, setTitle] = useState(initialTitle);
+  const [body, setBody] = useState(initialBody);
+
+  const [addNote, { loading: adding, error: addError }] = useMutation(
+    ADD_NOTE,
+    {
+      onCompleted,
+    }
+  );
+
+  const [updateNote, { loading: updating, error: updateError }] = useMutation(
+    UPDATE_NOTE,
+    {
+      onCompleted,
+    }
+  );
+
+  useEffect(() => {
+    setTitle(initialTitle);
+    setBody(initialBody);
+  }, [initialTitle, initialBody]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    addNote({ variables: { title, body } });
-    setTitle("");
-    setBody("");
+    if (noteId) {
+      updateNote({
+        variables: { id: noteId, title, body },
+      });
+    } else {
+      addNote({
+        variables: { title, body },
+      });
+    }
   };
 
   return (
@@ -37,9 +67,24 @@ function NoteForm() {
           <FormLabel>Isi Catatan</FormLabel>
           <Textarea value={body} onChange={(e) => setBody(e.target.value)} />
         </FormControl>
-        <Button mt={4} colorScheme="teal" type="submit">
-          Simpan
+        <Button
+          mt={4}
+          colorSchem  e="teal"
+          type="submit"
+          isLoading={adding || updating}
+        >
+          {noteId ? "Update" : "Tambah"} Catatan
         </Button>
+        {addError && (
+          <Text color="red.500">
+            Gagal menambah catatan: {addError.message}
+          </Text>
+        )}
+        {updateError && (
+          <Text color="red.500">
+            Gagal memperbarui catatan: {updateError.message}
+          </Text>
+        )}
       </form>
     </Box>
   );

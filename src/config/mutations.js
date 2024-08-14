@@ -10,3 +10,14 @@ export const ADD_NOTE = gql`
     }
   }
 `;
+
+export const UPDATE_NOTE = gql`
+  mutation UpdateNote($id: ID!, $title: String!, $body: String!) {
+    updateNote(id: $id, title: $title, body: $body) {
+      id
+      title
+      body
+      createdAt
+    }
+  }
+`;
