@@ -12,8 +12,9 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import { GET_NOTE_BY_ID } from "../../config/query";
+import { DELETE_NOTE } from "../../config/mutations";
 import moment from "moment";
 import NoteForm from "../../components/NoteForm";
 import { useState, useEffect } from "react";
@@ -24,6 +25,27 @@ function NoteDetail() {
   const [isEditing, setIsEditing] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
+
+  const [deleteNote] = useMutation(DELETE_NOTE, {
+    onCompleted: () => {
+      toast({
+        title: "Catatan Berhasil Dihapus!",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      router.push("/");
+    },
+    onError: (error) => {
+      toast({
+        title: "Gagal Menghapus Catatan.",
+        description: error.message,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    },
+  });
 
   useEffect(() => {
     if (localStorage.getItem("showToast") === "true") {
@@ -63,6 +85,17 @@ function NoteDetail() {
     window.location.reload();
   };
 
+  const handleDelete = () => {
+    const confirmDelete = confirm(
+      "Apakah Anda Yakin Ingin Menghapus Catatan Ini?"
+    );
+    if (confirmDelete) {
+      deleteNote({
+        variables: { id },
+      });
+    }
+  };
+
   return (
     <Box p={5}>
       <Text fontSize="xl">{note.title}</Text>
@@ -70,6 +103,9 @@ function NoteDetail() {
       <Text mt={4}>Dibuat pada: {formattedDate}</Text>
       <Button mt={4} mr={2} colorScheme="teal" onClick={onOpen}>
         Edit
+      </Button>
+      <Button mt={4} mr={2} colorScheme="red" onClick={handleDelete}>
+        Hapus
       </Button>
       <Button mt={4} colorScheme="gray" onClick={() => router.push("/")}>
         Kembali ke Daftar

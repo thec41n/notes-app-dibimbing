@@ -1,8 +1,43 @@
-import { Box, Text, Button } from "@chakra-ui/react";
+import { Box, Text, Button, useToast } from "@chakra-ui/react";
 import Link from "next/link";
 import moment from "moment";
+import { useMutation } from "@apollo/client";
+import { DELETE_NOTE } from "../config/mutations";
 
 function NoteList({ notes }) {
+  const toast = useToast();
+  const [deleteNote] = useMutation(DELETE_NOTE, {
+    refetchQueries: ["GetNotes"],
+    onCompleted: () => {
+      toast({
+        title: "Catatan Berhasil Dihapus!",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Gagal Menghapus Catatan.",
+        description: error.message,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    },
+  });
+
+  const handleDelete = (id) => {
+    const confirmDelete = confirm("Apakah Anda Yakin Ingin Menghapus Catatan Ini?");
+    if (confirmDelete) {
+      deleteNote({
+        variables: { id },
+      }).catch((error) => {
+        console.error("Error deleting note:", error);
+      });
+    }
+  };
+
   if (!notes || notes.length === 0) {
     return (
       <Box
@@ -36,6 +71,19 @@ function NoteList({ notes }) {
                 onClick={(e) => e.stopPropagation()}
               >
                 Detail
+              </Button>
+              <Button
+                colorScheme="red"
+                size="sm"
+                mt={4}
+                ml={2}
+                onClick={(e) => {
+                  e.stopPropagation(); 
+                  e.preventDefault();
+                  handleDelete(note.id);
+                }}
+              >
+                Hapus
               </Button>
             </Box>
           </Link>

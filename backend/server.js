@@ -25,6 +25,7 @@ const typeDefs = gql`
   type Mutation {
     addNote(title: String!, body: String!): Note
     updateNote(id: ID!, title: String!, body: String!): Note
+    deleteNote(id: ID!): Note
   }
 `;
 
@@ -56,6 +57,13 @@ const resolvers = {
       const res = await pool.query(
         "UPDATE notes SET title = $1, body = $2, created_at = NOW() WHERE id = $3 RETURNING *",
         [title, body, id]
+      );
+      return res.rows[0];
+    },
+    deleteNote: async (_, { id }) => {
+      const res = await pool.query(
+        "DELETE FROM notes WHERE id = $1 RETURNING *",
+        [id]
       );
       return res.rows[0];
     },
