@@ -14,17 +14,7 @@ import { useQuery, gql } from "@apollo/client";
 import Navbar from "../components/Navbar";
 import NoteList from "../components/NoteList";
 import NoteForm from "../components/NoteForm";
-
-const GET_NOTES = gql`
-  query GetNotes {
-    notes {
-      id
-      title
-      body
-      createdAt
-    }
-  }
-`;
+import { GET_NOTES } from "../config/mutations";
 
 export default function Home() {
   const { isOpen, onOpen, onClose } = useDisclosure();
